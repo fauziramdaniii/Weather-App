@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import background from "./assets/background.jpg";
-import "./component/description.css";
 import getDataWeather from "./utils/apiService";
 import Description from "./component/Description";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import SavedCitiesModal from "./component/SavedCitiesModal";
 
 function App() {
   const [city, setCity] = useState("");
   const [weatherData, setWeatherData] = useState(null);
+  const [savedCities, setSavedCities] = useState([]);
+  const [showModal, setShowModal] = useState(false);
 
   const fetchData = async (latitude, longitude) => {
     try {
@@ -60,6 +62,38 @@ function App() {
     }
   };
 
+ 
+  const saveCity = () => {
+    if (weatherData && weatherData.city) {
+      const savedCityList = JSON.parse(localStorage.getItem("savedCities")) || [];
+      const cityName = weatherData.city.name;
+
+      // Check if the city is already saved
+      if (!savedCityList.includes(cityName)) {
+        const updatedSavedCityList = [...savedCityList, cityName];
+        localStorage.setItem("savedCities", JSON.stringify(updatedSavedCityList));
+        setSavedCities(updatedSavedCityList);
+        toast.success(`City "${cityName}" saved!`);
+      } else {
+        toast.info(`City "${cityName}" is already saved!`);
+      }
+    }
+  };
+
+  const deleteCity = (cityName) => {
+    const savedCityList = JSON.parse(localStorage.getItem("savedCities")) || [];
+    const updatedSavedCityList = savedCityList.filter(city => city !== cityName);
+    localStorage.setItem("savedCities", JSON.stringify(updatedSavedCityList));
+    setSavedCities(updatedSavedCityList);
+    toast.success(`City "${cityName}" deleted from saved list!`);
+  };
+
+ const accessSavedList = () => {
+    const savedCityList = JSON.parse(localStorage.getItem("savedCities")) || [];
+    setSavedCities(savedCityList);
+    setShowModal(true);
+  };
+
   useEffect(() => {
     getLocationWeather();
   }, []);
@@ -83,6 +117,15 @@ function App() {
           </div>
 
           <div className="section section__temperature">
+            <div className="section__temperature-buttons">
+                <button className="section__temperature-save-button" type="button" onClick={saveCity}>
+                    Save City
+                </button>
+                <button className="section__temperature-access-button" type="button" onClick={accessSavedList}>
+                    Show Saved List
+                </button>
+            </div>
+
             {weatherData && (
               <div className="icon">
                 <h3>
@@ -107,6 +150,13 @@ function App() {
             autoClose={3000}
             pauseOnFocusLoss
           />
+       {showModal && (
+        <SavedCitiesModal
+          savedCities={savedCities}
+          onClose={() => setShowModal(false)}
+          deleteCity={deleteCity}
+        />
+      )}
         </div>
       </div>
     </div>
