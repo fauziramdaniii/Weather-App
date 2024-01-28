@@ -1,26 +1,68 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import background from "./assets/background.jpg";
 import "./component/description.css";
 import getDataWeather from "./utils/apiService";
 import Description from "./component/Description";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
-  // Create a state for the city name
   const [city, setCity] = useState("");
-
-  // Create a state for the weather data
   const [weatherData, setWeatherData] = useState(null);
 
-    const fetchData = async () => {
-      const response = await getDataWeather(city, import.meta.env.VITE_REACT_APP_API_KEY);
-      console.log(response);
+  const fetchData = async (latitude, longitude) => {
+    try {
+      const response = await getDataWeather({
+        city,
+        latitude,
+        longitude,
+        apiKey: import.meta.env.VITE_REACT_APP_API_KEY
+      });
+
+      if (response === null) {
+        toast("City Not Found")
+      }
       setWeatherData(response);
-    };
+    } catch (error) {
+      // Display a toast error with a message
+      toast.error("Error fetching weather data");
+    }
+  };
 
-    const handleSearch = () => {
-      fetchData();
-    };
+  const handleSearch = () => {
+    fetchData(null, null);
+  };
 
+  const getLocationWeather = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          fetchData(latitude, longitude);
+
+          // Get city name based on coordinates and update the input
+          try {
+            const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=GOOGLE_MAPS_API_KEY`);
+            const data = await response.json();
+            const cityName = data.results[0].address_components.find(component => component.types.includes("locality")).long_name;
+            setCity(cityName);
+          } catch (error) {
+            console.error("Error fetching city name:", error);
+          }
+        },
+        (error) => {
+          // Handle geolocation error
+          toast.error("Error getting current location");
+        }
+      );
+    } else {
+      toast.error("Geolocation is not supported by this browser");
+    }
+  };
+
+  useEffect(() => {
+    getLocationWeather();
+  }, []);
 
   return (
     <div className="app" style={{ backgroundImage: `url(${background})` }}>
@@ -60,6 +102,11 @@ function App() {
             </div>
           </div>
           <Description forecastData={weatherData} />
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            pauseOnFocusLoss
+          />
         </div>
       </div>
     </div>
