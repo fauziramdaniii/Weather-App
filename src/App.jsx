@@ -20,7 +20,7 @@ function App() {
         longitude,
         apiKey: import.meta.env.VITE_REACT_APP_API_KEY
       });
-
+      console.log(response)
       if (response === null) {
         toast("City Not Found")
       }
