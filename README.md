@@ -9,6 +9,8 @@ Currently, two official plugins are available:
 - Open Terminal, Write Command `npm install`
 - And Then Run The Weather App With Command `npm run dev`
 
+- For Assesement No 1 is in the RefactorCode.js
+
 [Live Demo](https://weather-app-nine-kappa-78.vercel.app/)
 
 [![Live Demo](https://img.shields.io/badge/Live-Demo-blue)](https://weather-app-nine-kappa-78.vercel.app/)

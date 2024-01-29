@@ -6,12 +6,21 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import SavedCitiesModal from "./component/SavedCitiesModal";
 
+/**
+ * Main App component for the Weather App.
+ */
 function App() {
+  // State variables
   const [city, setCity] = useState("");
   const [weatherData, setWeatherData] = useState(null);
   const [savedCities, setSavedCities] = useState([]);
   const [showModal, setShowModal] = useState(false);
 
+  /**
+   * Fetch weather data based on city name or coordinates.
+   * @param {number} latitude - Latitude of the location.
+   * @param {number} longitude - Longitude of the location.
+   */
   const fetchData = async (latitude, longitude) => {
     try {
       const response = await getDataWeather({
@@ -20,9 +29,9 @@ function App() {
         longitude,
         apiKey: import.meta.env.VITE_REACT_APP_API_KEY
       });
-      console.log(response)
+
       if (response === null) {
-        toast("City Not Found")
+        toast("City Not Found");
       }
       setWeatherData(response);
     } catch (error) {
@@ -31,10 +40,16 @@ function App() {
     }
   };
 
+  /**
+   * Handles the search action.
+   */
   const handleSearch = () => {
     fetchData(null, null);
   };
 
+  /**
+   * Get weather data based on the user's current location.
+   */
   const getLocationWeather = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -62,7 +77,9 @@ function App() {
     }
   };
 
- 
+  /**
+   * Save the current city to the list of saved cities.
+   */
   const saveCity = () => {
     if (weatherData && weatherData.city) {
       const savedCityList = JSON.parse(localStorage.getItem("savedCities")) || [];
@@ -80,6 +97,10 @@ function App() {
     }
   };
 
+  /**
+   * Delete a city from the list of saved cities.
+   * @param {string} cityName - The name of the city to be deleted.
+   */
   const deleteCity = (cityName) => {
     const savedCityList = JSON.parse(localStorage.getItem("savedCities")) || [];
     const updatedSavedCityList = savedCityList.filter(city => city !== cityName);
@@ -88,16 +109,23 @@ function App() {
     toast.success(`City "${cityName}" deleted from saved list!`);
   };
 
- const accessSavedList = () => {
+  /**
+   * Access the list of saved cities and display a modal.
+   */
+  const accessSavedList = () => {
     const savedCityList = JSON.parse(localStorage.getItem("savedCities")) || [];
     setSavedCities(savedCityList);
     setShowModal(true);
   };
 
+  /**
+   * Fetch weather data for the user's current location when the component mounts.
+   */
   useEffect(() => {
     getLocationWeather();
   }, []);
 
+  // JSX for the component's UI
   return (
     <div className="app" style={{ backgroundImage: `url(${background})` }}>
       <div className="overlay">
